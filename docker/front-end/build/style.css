@@ -1,0 +1,109 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  background: #f5f7f6;
+  color: #2e2e2e;
+}
+
+/* Navbar */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px 60px;
+  background: #ffffff;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.navbar ul {
+  list-style: none;
+  display: flex;
+  gap: 30px;
+}
+
+.navbar a {
+  text-decoration: none;
+  color: #1b5e20;
+  font-weight: 500;
+}
+
+/* Hero */
+.hero {
+  height: 80vh;
+  background: linear-gradient(to right, #1b5e20, #4caf50);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.hero button {
+  margin-top: 20px;
+  padding: 14px 30px;
+  background: white;
+  color: #1b5e20;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+}
+
+/* Sections */
+section {
+  padding: 80px 60px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+/* Services */
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 25px;
+}
+
+.card {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+/* Gallery */
+.gallery .grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.gallery img {
+  width: 100%;
+  border-radius: 12px;
+  transition: transform 0.3s;
+}
+
+.gallery img:hover {
+  transform: scale(1.05);
+}
+
+/* Contact */
+.contact {
+  background: #e8f5e9;
+  text-align: center;
+}
+
+/* Footer */
+footer {
+  background: #1b5e20;
+  color: white;
+  text-align: center;
+  padding: 20px;
+}

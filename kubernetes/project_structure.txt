@@ -1,0 +1,39 @@
+three-tier-k8s-project/
+│
+├── namespace/                         # Namespace isolation (created first)
+│   └── namespace.yaml                 # Defines agro-drones namespace
+│
+├── secrets/                           # Sensitive data (never hardcode)
+│   └── db-secrets.yaml                # DB username & password (K8s Secret)
+│
+├── frontend/                          # Presentation layer (public)
+│   ├── deployment.yaml                # Frontend Pods & ECR image
+│   ├── service.yaml                   # NodePort / ClusterIP service
+│   └── configmap.yaml                 # Frontend configs (API URL, env)
+│
+├── backend/                           # Application layer (internal)
+│   ├── deployment.yaml                # Backend Pods & DB connection
+│   ├── service.yaml                   # ClusterIP service (internal only)
+│   └── configmap.yaml                 # Backend configs (DB host, app vars)
+│
+├── database/                          # Data layer (private)
+│   ├── deployment.yaml                # Postgres container definition
+│   ├── service.yaml                   # ClusterIP service (no public access)
+│   └── pvc.yaml                       # PersistentVolumeClaim (data storage)
+│
+├── network-policies/                  # Zero-trust pod networking
+│   ├── default-deny.yaml              # Deny all pod-to-pod traffic
+│   ├── frontend-to-backend.yaml       # Allow FE → BE only
+│   └── backend-to-db.yaml             # Allow BE → DB only
+│
+├── ingress/                           # External access (future)
+│   └── ingress.yaml                   # Ingress / ALB routing rules
+│
+├── scripts/                           # Automation & CI/CD helpers
+│   ├── deploy-all.sh                  # Deploy resources in correct order
+│   └── cleanup.sh                     # Delete all resources / namespace
+│
+├── README.md                          # Project overview & usage
+│
+└── architecture/                      # System design visuals
+    └── architecture.png               # 3-tier Kubernetes architecture

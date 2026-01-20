@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: agro-drones
+data:
+  DB_HOST: postgres
+  DB_NAME: agrodb
