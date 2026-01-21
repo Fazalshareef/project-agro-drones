@@ -1,0 +1,62 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/Fazalshareef/project-agro-drones.git'
+            }
+        }
+
+        stage('Verify Kubernetes Access') {
+            steps {
+                sh 'kubectl get nodes'
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh '''
+                  cd kubernetes
+                  chmod +x scripts/deploy-all.sh
+                  ./scripts/deploy-all.sh
+                '''
+            }
+        }
+    }
+
+    post {
+
+        success {
+            emailext(
+                subject: "✅ SUCCESS: Agro-Drones Kubernetes Deployment",
+                body: """
+                    <h3>Deployment Successful</h3>
+                    <p>Project: Agro-Drones</p>
+                    <p>Environment: Kubernetes</p>
+                    <p>Status: SUCCESS</p>
+                    <p>Build Number: ${BUILD_NUMBER}</p>
+                    <p>Job: ${JOB_NAME}</p>
+                """,
+                to: "your-email@gmail.com"
+            )
+        }
+
+        failure {
+            emailext(
+                subject: "❌ FAILED: Agro-Drones Kubernetes Deployment",
+                body: """
+                    <h3>Deployment Failed</h3>
+                    <p>Project: Agro-Drones</p>
+                    <p>Status: FAILED</p>
+                    <p>Build Number: ${BUILD_NUMBER}</p>
+                    <p>Job: ${JOB_NAME}</p>
+                    <p>Please check Jenkins logs.</p>
+                """,
+                to: "mohammedfazalshareef@gmail.com"
+            )
+        }
+    }
+}
