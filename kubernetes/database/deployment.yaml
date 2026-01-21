@@ -13,6 +13,8 @@ spec:
       labels:
         app: postgres
     spec:
+      imagePullSecrets:
+        - name: ecr-secret
       containers:
       - name: postgres
         image: 996417348665.dkr.ecr.us-east-1.amazonaws.com/agro-drones:postgress-db-v1
