@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: postgres
-        image: 996417348665.dkr.ecr.us-east-1.amazonaws.com/agro-drones:postgres-db-v1
+        image: 996417348665.dkr.ecr.us-east-1.amazonaws.com/agro-drones:postgress-db-v1
         ports:
         - containerPort: 5432
         env:
