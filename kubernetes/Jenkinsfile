@@ -40,7 +40,7 @@ pipeline {
                     <p>Build Number: ${BUILD_NUMBER}</p>
                     <p>Job: ${JOB_NAME}</p>
                 """,
-                to: "your-email@gmail.com"
+                to: "moahmmedfazalshareef@gmail.com"
             )
         }
 
