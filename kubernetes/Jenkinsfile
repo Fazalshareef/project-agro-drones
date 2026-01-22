@@ -8,6 +8,13 @@ pipeline {
 
     stages {
 
+        stage('Clean Workspace') {
+            steps {
+                echo "🧹 Cleaning Jenkins workspace to avoid stale files..."
+                deleteDir()
+            }
+        }
+
         stage('Checkout Code') {
             steps {
                 git branch: 'main',
@@ -17,7 +24,9 @@ pipeline {
 
         stage('Verify Kubernetes Access') {
             steps {
-                sh 'kubectl get nodes'
+                sh '''
+                  kubectl get nodes
+                '''
             }
         }
 
