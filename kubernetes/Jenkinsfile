@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        AWS_REGION = "us-east-1"
+        KUBECONFIG = "/var/lib/jenkins/.kube/config"
+    }
+
     stages {
 
         stage('Checkout Code') {
@@ -19,16 +24,24 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 sh '''
-                  cd kubernetes
-                  chmod +x scripts/deploy-all.sh
-                  ./scripts/deploy-all.sh
+                  chmod +x kubernetes/scripts/deploy-all.sh
+                  kubernetes/scripts/deploy-all.sh
+                '''
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                sh '''
+                  kubectl get pods -n agro-drones
+                  kubectl get svc -n ingress-nginx
+                  kubectl get ingress -n agro-drones
                 '''
             }
         }
     }
 
     post {
-
         success {
             emailext(
                 subject: "✅ SUCCESS: Agro-Drones Kubernetes Deployment",
@@ -40,7 +53,7 @@ pipeline {
                     <p>Build Number: ${BUILD_NUMBER}</p>
                     <p>Job: ${JOB_NAME}</p>
                 """,
-                to: "moahmmedfazalshareef@gmail.com"
+                to: "mohammedfazalshareef@gmail.com"
             )
         }
 

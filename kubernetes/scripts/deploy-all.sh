@@ -1,77 +1,129 @@
 #!/bin/bash
 set -euo pipefail
 
-NAMESPACE="agro-drones"
-INGRESS_NS="ingress-nginx"
+########################################
+# VARIABLES
+########################################
+APP_NAMESPACE="agro-drones"
+INGRESS_NAMESPACE="ingress-nginx"
+METALLB_NAMESPACE="metallb-system"
+
 AWS_REGION="us-east-1"
 ECR_REGISTRY="996417348665.dkr.ecr.us-east-1.amazonaws.com"
 ECR_SECRET="ecr-secret"
 
-echo "🔍 Validating tools access..."
-kubectl version --client > /dev/null
-aws sts get-caller-identity > /dev/null
+echo "🚀 Starting full Kubernetes deployment..."
 
-# --- App namespace ---
-echo "📦 Ensuring namespace: $NAMESPACE"
-kubectl get ns $NAMESPACE >/dev/null 2>&1 || kubectl create namespace $NAMESPACE
+########################################
+# PRE-FLIGHT CHECKS
+########################################
+echo "🔍 Verifying tools access..."
+kubectl version --client >/dev/null
+aws sts get-caller-identity >/dev/null
+
+########################################
+# NAMESPACES
+########################################
+echo "📦 Ensuring namespaces..."
+
+kubectl get ns ${APP_NAMESPACE} >/dev/null 2>&1 || \
+kubectl create namespace ${APP_NAMESPACE}
+
+kubectl get ns ${INGRESS_NAMESPACE} >/dev/null 2>&1 || \
+kubectl create namespace ${INGRESS_NAMESPACE}
+
+kubectl get ns ${METALLB_NAMESPACE} >/dev/null 2>&1 || \
+kubectl create namespace ${METALLB_NAMESPACE}
+
 sleep 3
 
-# --- Ingress namespace ---
-echo "🌐 Ensuring namespace: $INGRESS_NS"
-kubectl get ns $INGRESS_NS >/dev/null 2>&1 || kubectl create namespace $INGRESS_NS
+########################################
+# METALLB (v0.13 CONFIGMAP STYLE)
+########################################
+echo "🌐 Deploying MetalLB configuration..."
+kubectl apply -f kubernetes/metallb/
 sleep 5
 
-# --- ECR secret ---
-echo "🔐 Ensuring ECR secret..."
-kubectl get secret $ECR_SECRET -n $NAMESPACE >/dev/null 2>&1 || \
-kubectl create secret docker-registry $ECR_SECRET \
-  --docker-server=$ECR_REGISTRY \
+########################################
+# ECR IMAGE PULL SECRET
+########################################
+echo "🔐 Ensuring ECR imagePullSecret..."
+
+kubectl get secret ${ECR_SECRET} -n ${APP_NAMESPACE} >/dev/null 2>&1 || \
+kubectl create secret docker-registry ${ECR_SECRET} \
+  --docker-server=${ECR_REGISTRY} \
   --docker-username=AWS \
-  --docker-password=$(aws ecr get-login-password --region $AWS_REGION) \
-  -n $NAMESPACE
+  --docker-password=$(aws ecr get-login-password --region ${AWS_REGION}) \
+  -n ${APP_NAMESPACE}
+
 sleep 3
 
-# --- Core configs ---
-echo "⚙️ Applying namespaces & secrets..."
-kubectl apply -f namespace/
-sleep 2
-kubectl apply -f secrets/
+########################################
+# APPLICATION SECRETS
+########################################
+echo "🗝️ Applying application secrets..."
+kubectl apply -f kubernetes/secrets/
 sleep 3
 
-# 🔥 Infrastructure first
-echo "🚀 Deploying Ingress Controller..."
-kubectl apply -f ingress-controller/
+########################################
+# INGRESS CONTROLLER
+########################################
+echo "🚦 Deploying Ingress Controller..."
+kubectl apply -f kubernetes/ingress-nginx/
 
-echo "⏳ Waiting for Ingress Controller to be ready..."
+echo "⏳ Waiting for Ingress Controller rollout..."
 kubectl rollout status deployment ingress-nginx-controller \
-  -n $INGRESS_NS --timeout=180s
+  -n ${INGRESS_NAMESPACE} --timeout=300s
+
 sleep 5
 
-# --- App stack ---
-echo "🗄️ Deploying database..."
-kubectl apply -f database/
+########################################
+# DATABASE (PV → PVC → DEPLOYMENT → SERVICE)
+########################################
+echo "🗄️ Deploying PostgreSQL..."
+kubectl apply -f kubernetes/database/
 sleep 5
 
-echo "🧠 Deploying backend..."
-kubectl apply -f backend/
+########################################
+# BACKEND
+########################################
+echo "🧠 Deploying Backend..."
+kubectl apply -f kubernetes/backend/
 sleep 5
 
-echo "🎨 Deploying frontend..."
-kubectl apply -f frontend/
+########################################
+# FRONTEND
+########################################
+echo "🎨 Deploying Frontend..."
+kubectl apply -f kubernetes/frontend/
 sleep 5
 
-# --- Routing & security ---
-echo "🛣️ Applying ingress rules..."
-kubectl apply -f ingress/
+########################################
+# INGRESS RULES (DOMAIN ROUTING)
+########################################
+echo "🌍 Applying Ingress rules..."
+kubectl apply -f kubernetes/ingress/
 sleep 3
 
-echo "🔒 Applying network policies..."
-kubectl apply -f network-policies/
-sleep 3
+########################################
+# NETWORK POLICIES (OPTIONAL / SECURITY)
+########################################
+if [ -d "kubernetes/network-policies" ]; then
+  echo "🔒 Applying Network Policies..."
+  kubectl apply -f kubernetes/network-policies/
+  sleep 3
+fi
 
-# --- Final readiness check ---
-echo "⏳ Waiting for all application pods..."
+########################################
+# FINAL READINESS CHECK
+########################################
+echo "⏳ Waiting for all application pods to be Ready..."
 kubectl wait --for=condition=Ready pod \
-  --all -n $NAMESPACE --timeout=300s
+  --all -n ${APP_NAMESPACE} --timeout=300s || \
+echo "⚠️ Some pods are still initializing (check logs if needed)"
 
+########################################
+# SUCCESS
+########################################
 echo "✅ Deployment completed successfully!"
+echo "🌐 Application should be accessible via Ingress (domain configured)"
