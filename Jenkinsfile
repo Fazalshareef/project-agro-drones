@@ -58,7 +58,7 @@ pipeline {
                     <p><b>Build Number:</b> ${BUILD_NUMBER}</p>
                     <p><b>Status:</b> SUCCESS</p>
                 """,
-                to: "your-email@gmail.com"
+                to: "mohammedfazalshareef@gmail.com"
             )
         }
 
@@ -72,7 +72,7 @@ pipeline {
                     <p><b>Build Number:</b> ${BUILD_NUMBER}</p>
                     <p>Please check Jenkins console logs.</p>
                 """,
-                to: "your-email@gmail.com"
+                to: "mohammedfazalshareef@gmail.com"
             )
         }
     }
