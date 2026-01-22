@@ -6,17 +6,12 @@ AWS_REGION="us-east-1"
 ECR_REGISTRY="996417348665.dkr.ecr.us-east-1.amazonaws.com"
 ECR_SECRET="ecr-secret"
 
-echo "🔍 Verifying kubectl access..."
 kubectl version --client > /dev/null
-
-echo "🔍 Verifying AWS access..."
 aws sts get-caller-identity > /dev/null
 
-echo "📦 Creating namespace (if not exists)..."
 kubectl get ns $NAMESPACE >/dev/null 2>&1 || \
 kubectl create namespace $NAMESPACE
 
-echo "🔐 Creating ECR imagePullSecret (if not exists)..."
 kubectl get secret $ECR_SECRET -n $NAMESPACE >/dev/null 2>&1 || \
 kubectl create secret docker-registry $ECR_SECRET \
   --docker-server=$ECR_REGISTRY \
@@ -24,22 +19,22 @@ kubectl create secret docker-registry $ECR_SECRET \
   --docker-password=$(aws ecr get-login-password --region $AWS_REGION) \
   -n $NAMESPACE
 
-echo "📂 Applying secrets..."
-kubectl apply -f secrets/ -n $NAMESPACE
+kubectl apply -f namespace/
+kubectl apply -f secrets/
 
-echo "💾 Applying database resources..."
-kubectl apply -f database/ -n $NAMESPACE
+# 🔥 Infrastructure first
+kubectl apply -f ingress-controller/
 
-echo "🧠 Deploying backend..."
-kubectl apply -f backend/ -n $NAMESPACE
+# App stack
+kubectl apply -f database/
+kubectl apply -f backend/
+kubectl apply -f frontend/
 
-echo "🎨 Deploying frontend..."
-kubectl apply -f frontend/ -n $NAMESPACE
+# Routing rules
+kubectl apply -f ingress/
 
-echo "🔐 Applying network policies..."
-kubectl apply -f network-policies/ -n $NAMESPACE
+kubectl apply -f network-policies/
 
-echo "⏳ Waiting for pods to become ready..."
 kubectl wait --for=condition=Ready pod \
   --all -n $NAMESPACE --timeout=180s
 
