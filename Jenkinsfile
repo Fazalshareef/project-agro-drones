@@ -33,7 +33,7 @@ pipeline {
                 '''
             }
         }
-
+hg
         stage('Verify Deployment') {
             steps {
                 sh '''
