@@ -27,7 +27,6 @@ pipeline {
             steps {
                 sh '''
                   echo "Deploying Kubernetes manifests..."
-                  cd kubernetes
                   chmod +x scripts/deploy-all.sh
                   ./scripts/deploy-all.sh
                 '''
