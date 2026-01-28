@@ -35,13 +35,21 @@ sleep 3
 ########################################
 # METALLB
 ########################################
+
 echo "🌐 Installing MetalLB..."
 kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.12/config/manifests/metallb-native.yaml
 
-sleep 10
+echo "⏳ Waiting for MetalLB controller..."
+kubectl rollout status deployment controller -n metallb-system --timeout=180s
+
+echo "⏳ Waiting for MetalLB speaker pods..."
+kubectl rollout status daemonset speaker -n metallb-system --timeout=180s
+
+sleep 20
 
 echo "📡 Applying MetalLB config..."
 kubectl apply -f metallb/config.yaml
+
 
 ########################################
 # ECR IMAGE PULL SECRET
