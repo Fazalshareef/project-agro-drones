@@ -26,28 +26,27 @@ aws sts get-caller-identity >/dev/null
 ########################################
 echo "📦 Ensuring namespaces..."
 
-kubectl get ns ${APP_NAMESPACE} >/dev/null 2>&1 || \
-kubectl create namespace ${APP_NAMESPACE}
-
-kubectl get ns ${INGRESS_NAMESPACE} >/dev/null 2>&1 || \
-kubectl create namespace ${INGRESS_NAMESPACE}
-
-kubectl get ns ${METALLB_NAMESPACE} >/dev/null 2>&1 || \
-kubectl create namespace ${METALLB_NAMESPACE}
+kubectl get ns ${APP_NAMESPACE} >/dev/null 2>&1 || kubectl create namespace ${APP_NAMESPACE}
+kubectl get ns ${INGRESS_NAMESPACE} >/dev/null 2>&1 || kubectl create namespace ${INGRESS_NAMESPACE}
+kubectl get ns ${METALLB_NAMESPACE} >/dev/null 2>&1 || kubectl create namespace ${METALLB_NAMESPACE}
 
 sleep 3
 
 ########################################
-# METALLB (v0.13 CONFIGMAP STYLE)
+# METALLB
 ########################################
-echo "🌐 Installing MetalLB..."
-kubectl apply -f kubernetes/metallb/native.yaml
+echo "🌐 Installing MetalLB core..."
+kubectl apply -f metallb/native.yaml
 
-sleep 10
+echo "⏳ Waiting for MetalLB controller..."
+kubectl rollout status deployment controller -n ${METALLB_NAMESPACE} --timeout=120s
 
-echo "📡 Configuring MetalLB IP pool..."
-kubectl apply -f kubernetes/metallb/config.yaml
+sleep 5
 
+echo "📡 Applying MetalLB IP pool config..."
+kubectl apply -f metallb/config.yaml
+
+sleep 5
 
 ########################################
 # ECR IMAGE PULL SECRET
@@ -67,14 +66,14 @@ sleep 3
 # APPLICATION SECRETS
 ########################################
 echo "🗝️ Applying application secrets..."
-kubectl apply -f kubernetes/secrets/
+kubectl apply -f secrets/
 sleep 3
 
 ########################################
 # INGRESS CONTROLLER
 ########################################
 echo "🚦 Deploying Ingress Controller..."
-kubectl apply -f kubernetes/ingress-nginx/
+kubectl apply -f ingress-nginx/
 
 echo "⏳ Waiting for Ingress Controller rollout..."
 kubectl rollout status deployment ingress-nginx-controller \
@@ -83,52 +82,52 @@ kubectl rollout status deployment ingress-nginx-controller \
 sleep 5
 
 ########################################
-# DATABASE (PV → PVC → DEPLOYMENT → SERVICE)
+# DATABASE
 ########################################
 echo "🗄️ Deploying PostgreSQL..."
-kubectl apply -f kubernetes/database/
+kubectl apply -f database/
 sleep 5
 
 ########################################
 # BACKEND
 ########################################
 echo "🧠 Deploying Backend..."
-kubectl apply -f kubernetes/backend/
+kubectl apply -f backend/
 sleep 5
 
 ########################################
 # FRONTEND
 ########################################
 echo "🎨 Deploying Frontend..."
-kubectl apply -f kubernetes/frontend/
+kubectl apply -f frontend/
 sleep 5
 
 ########################################
-# INGRESS RULES (DOMAIN ROUTING)
+# INGRESS RULES
 ########################################
 echo "🌍 Applying Ingress rules..."
-kubectl apply -f kubernetes/ingress/
+kubectl apply -f ingress/
 sleep 3
 
 ########################################
-# NETWORK POLICIES (OPTIONAL / SECURITY)
+# NETWORK POLICIES
 ########################################
-if [ -d "kubernetes/network-policies" ]; then
+if [ -d "network-policies" ]; then
   echo "🔒 Applying Network Policies..."
-  kubectl apply -f kubernetes/network-policies/
+  kubectl apply -f network-policies/
   sleep 3
 fi
 
 ########################################
 # FINAL READINESS CHECK
 ########################################
-echo "⏳ Waiting for all application pods to be Ready..."
+echo "⏳ Waiting for application pods..."
 kubectl wait --for=condition=Ready pod \
   --all -n ${APP_NAMESPACE} --timeout=300s || \
-echo "⚠️ Some pods are still initializing (check logs if needed)"
+echo "⚠️ Some pods still initializing — check logs"
 
 ########################################
 # SUCCESS
 ########################################
 echo "✅ Deployment completed successfully!"
-echo "🌐 Application should be accessible via Ingress (domain configured)"
+echo "🌐 Application should now be reachable via Ingress"
