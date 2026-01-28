@@ -112,11 +112,11 @@ sleep 3
 ########################################
 # NETWORK POLICIES
 ########################################
-if [ -d "network-policies" ]; then
-  echo "🔒 Applying Network Policies..."
-  kubectl apply -f network-policies/
-  sleep 3
-fi
+#if [ -d "network-policies" ]; then
+ # echo "🔒 Applying Network Policies..."
+  #kubectl apply -f network-policies/
+  #sleep 3
+#fi
 
 ########################################
 # FINAL READINESS CHECK
