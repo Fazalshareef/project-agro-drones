@@ -36,8 +36,8 @@ sleep 3
 # METALLB (STABLE OLD VERSION - NO WEBHOOK)
 ########################################
 echo "🌐 Installing MetalLB (stable)..."
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/metallb.yaml || true
 
-kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/metallb.yaml
 
 sleep 15
 
