@@ -1,14 +1,12 @@
-apiVersion: metallb.io/v1beta1
-kind: IPAddressPool
+apiVersion: v1
+kind: ConfigMap
 metadata:
-  name: default-pool
+  name: config
   namespace: metallb-system
-spec:
-  addresses:
-  - 192.168.1.240-192.168.1.250
----
-apiVersion: metallb.io/v1beta1
-kind: L2Advertisement
-metadata:
-  name: l2
-  namespace: metallb-system
+data:
+  config: |
+    address-pools:
+    - name: default
+      protocol: layer2
+      addresses:
+      - 192.168.1.240-192.168.1.250

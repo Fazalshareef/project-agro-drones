@@ -33,22 +33,19 @@ kubectl get ns ${METALLB_NAMESPACE} >/dev/null 2>&1 || kubectl create namespace 
 sleep 3
 
 ########################################
-# METALLB
+# METALLB (STABLE OLD VERSION - NO WEBHOOK)
 ########################################
+echo "🌐 Installing MetalLB (stable)..."
 
-echo "🌐 Installing MetalLB..."
-kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.12/config/manifests/metallb-native.yaml
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/metallb.yaml
 
-echo "⏳ Waiting for MetalLB controller..."
-kubectl rollout status deployment controller -n metallb-system --timeout=180s
+sleep 15
 
-echo "⏳ Waiting for MetalLB speaker pods..."
-kubectl rollout status daemonset speaker -n metallb-system --timeout=180s
-
-sleep 20
-
-echo "📡 Applying MetalLB config..."
+echo "📡 Configuring MetalLB address pool..."
 kubectl apply -f metallb/config.yaml
+
+sleep 5
+
 
 
 ########################################
