@@ -35,18 +35,13 @@ sleep 3
 ########################################
 # METALLB
 ########################################
-echo "🌐 Installing MetalLB core..."
-kubectl apply -f metallb/native.yaml
+echo "🌐 Installing MetalLB..."
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.12/config/manifests/metallb-native.yaml
 
-echo "⏳ Waiting for MetalLB controller..."
-kubectl rollout status deployment controller -n ${METALLB_NAMESPACE} --timeout=120s
+sleep 10
 
-sleep 5
-
-echo "📡 Applying MetalLB IP pool config..."
+echo "📡 Applying MetalLB config..."
 kubectl apply -f metallb/config.yaml
-
-sleep 5
 
 ########################################
 # ECR IMAGE PULL SECRET
