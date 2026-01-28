@@ -27,7 +27,14 @@ pipeline {
             steps {
                 sh '''
                   echo "Deploying Kubernetes manifests..."
+
+                  echo "Moving into kubernetes folder..."
+                  cd kubernetes
+
+                  echo "Making deploy script executable..."
                   chmod +x scripts/deploy-all.sh
+
+                  echo "Running deployment..."
                   ./scripts/deploy-all.sh
                 '''
             }
@@ -45,7 +52,6 @@ pipeline {
     }
 
     post {
-
         success {
             emailext(
                 subject: "✅ SUCCESS: Agro-Drones Kubernetes Deployment",
@@ -76,4 +82,3 @@ pipeline {
         }
     }
 }
-

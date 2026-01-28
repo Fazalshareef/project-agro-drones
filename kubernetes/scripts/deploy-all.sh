@@ -40,9 +40,14 @@ sleep 3
 ########################################
 # METALLB (v0.13 CONFIGMAP STYLE)
 ########################################
-echo "🌐 Deploying MetalLB configuration..."
-kubectl apply -f kubernetes/metallb/
-sleep 5
+echo "🌐 Installing MetalLB..."
+kubectl apply -f kubernetes/metallb/native.yaml
+
+sleep 10
+
+echo "📡 Configuring MetalLB IP pool..."
+kubectl apply -f kubernetes/metallb/config.yaml
+
 
 ########################################
 # ECR IMAGE PULL SECRET
